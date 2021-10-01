@@ -24,7 +24,7 @@ namespace SourceHook
 	malloc that are in the same page would lose their write access as well and the process could crash.
 
 	Allocating one page per code generation session is usually a waste of memory and on some platforms also
-	a waste of virtual address space (Windows’ VirtualAlloc has a granularity of 64K).
+	a waste of virtual address space (Windows?VirtualAlloc has a granularity of 64K).
 
 
 	IMPORTANT: the memory that Alloc() returns is not a in a defined state!

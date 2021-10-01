@@ -49,17 +49,20 @@
 //
 // 24-Oct-15 1.6  * Use C++11 variadic templates.
 //
+// 01-Oct-21 1.6.1* Make implicit_cast<> into lambda expression.
+//				  * Inline the horrible_union into horrible_cast. Reason: We do NOT consider anything 
+//						except MSVC, GCC, Clang.
+//				  * Removed everything about VC6. Reason: Too old...and since we are using C++11 
+//						and above, the VC6 should be deprecated.
 
 #ifndef FASTDELEGATE_H
 #define FASTDELEGATE_H
 
 #ifdef _MSC_VER
-# if _MSC_VER > 1000
 #  pragma once
-# endif // _MSC_VER > 1000
 #endif // #ifdef _MSC_VER
 
-#include <memory.h> // to allow <,> comparisons
+#include <memory> // to allow <,> comparisons
 
 ////////////////////////////////////////////////////////////////////////////////
 //						Configuration options
@@ -87,12 +90,6 @@
 // many vendors fraudulently define Microsoft's identifiers.
 #if defined(_MSC_VER) && !defined(__MWERKS__) && !defined(__VECTOR_C) && !defined(__ICL) && !defined(__BORLANDC__)
 #define FASTDLGT_ISMSVC
-
-#if (_MSC_VER <1300) // Many workarounds are required for VC6.
-#define FASTDLGT_VC6
-#pragma warning(disable:4786) // disable this ridiculous warning
-#endif
-
 #endif
 
 // Does the compiler uses Microsoft's member function pointer structure?
@@ -156,10 +153,8 @@ namespace detail {	// we'll hide the implementation details in a nested namespac
 // I use it instead of static_cast<> to emphasize that I'm not doing
 // anything nasty.
 // Usage is identical to static_cast<>
-template <class OutputClass, class InputClass>
-inline OutputClass implicit_cast(InputClass input){
-	return input;
-}
+template<class Out> constexpr inline auto implicit_cast = [](const auto& in) { return in; };
+
 
 //		horrible_cast< >
 // This is truly evil. It completely subverts C++'s type system, allowing you
@@ -168,23 +163,16 @@ inline OutputClass implicit_cast(InputClass input){
 // it is OK by checking that the union is the same size as each of its members.
 // horrible_cast<> should only be used for compiler-specific workarounds.
 // Usage is identical to reinterpret_cast<>.
-
-// This union is declared outside the horrible_cast because BCC 5.5.1
-// can't inline a function with a nested class, and gives a warning.
-template <class OutputClass, class InputClass>
-union horrible_union{
-	OutputClass out;
-	InputClass in;
-};
-
 template <class OutputClass, class InputClass>
 inline OutputClass horrible_cast(const InputClass input){
-	horrible_union<OutputClass, InputClass> u;
+	union {
+		OutputClass out;
+		InputClass in;
+	} u;
 	// Cause a compile-time error if in, out and u are not the same size.
 	// If the compile fails here, it means the compiler has peculiar
 	// unions which would prevent the cast from working.
-	static_assert(sizeof(InputClass)==sizeof(u) && sizeof(InputClass)==sizeof(OutputClass),
-			"Can't use horrible cast");
+	static_assert(sizeof(InputClass)==sizeof(u) && sizeof(InputClass)==sizeof(OutputClass), "Can't use horrible cast");
 	u.in = input;
 	return u.out;
 }
@@ -203,48 +191,17 @@ inline OutputClass horrible_cast(const InputClass input){
 #undef FASTDELEGATE_USESTATICFUNCTIONHACK
 #endif
 
-//			DefaultVoid - a workaround for 'void' templates in VC6.
-//
-//  (1) VC6 and earlier do not allow 'void' as a default template argument.
-//  (2) They also doesn't allow you to return 'void' from a function.
-//
-// Workaround for (1): Declare a dummy type 'DefaultVoid' which we use
-//   when we'd like to use 'void'. We convert it into 'void' and back
-//   using the templates DefaultVoidToVoid<> and VoidToDefaultVoid<>.
-// Workaround for (2): On VC6, the code for calling a void function is
-//   identical to the code for calling a non-void function in which the
-//   return value is never used, provided the return value is returned
-//   in the EAX register, rather than on the stack.
-//   This is true for most fundamental types such as int, enum, void *.
-//   Const void * is the safest option since it doesn't participate
-//   in any automatic conversions. But on a 16-bit compiler it might
-//   cause extra code to be generated, so we disable it for all compilers
-//   except for VC6 (and VC5).
-#ifdef FASTDLGT_VC6
-// VC6 workaround
-typedef const void * DefaultVoid;
-#else
-// On any other compiler, just use a normal void.
-typedef void DefaultVoid;
-#endif
+using DefaultVoid = void;
 
 // Translate from 'DefaultVoid' to 'void'.
 // Everything else is unchanged
-template <class T>
-struct DefaultVoidToVoid { typedef T type; };
-
-template <>
-struct DefaultVoidToVoid<DefaultVoid> {	typedef void type; };
+template <class T> struct DefaultVoidToVoid { using type = T; };
+template <> struct DefaultVoidToVoid<DefaultVoid> { using type = void; };
 
 // Translate from 'void' into 'DefaultVoid'
 // Everything else is unchanged
-template <class T>
-struct VoidToDefaultVoid { typedef T type; };
-
-template <>
-struct VoidToDefaultVoid<void> { typedef DefaultVoid type; };
-
-
+template <class T> struct VoidToDefaultVoid { using type = T; };
+template <> struct VoidToDefaultVoid<void> { using type = DefaultVoid; };
 
 ////////////////////////////////////////////////////////////////////////////////
 //						Fast Delegates, part 1:
@@ -335,10 +292,6 @@ struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE>  {
 // need to be treated as a special case.
 #ifdef FASTDLGT_MICROSOFT_MFP
 
-// We use unions to perform horrible_casts. I would like to use #pragma pack(push, 1)
-// at the start of each function for extra safety, but VC6 seems to ICE
-// intermittently if you do this inside a template.
-
 // __multiple_inheritance classes go here
 // Nasty hack for Microsoft and Intel (IA32 and Itanium)
 template<>
@@ -425,49 +378,6 @@ struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 2*sizeof(int) >
 	}
 };
 
-#if (_MSC_VER <1300)
-
-// Nasty hack for Microsoft Visual C++ 6.0
-// unknown_inheritance classes go here
-// There is a compiler bug in MSVC6 which generates incorrect code in this case!!
-template <>
-struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 3*sizeof(int) >
-{
-	template <class X, class XFuncType, class GenericMemFuncType>
-	inline static GenericClass *Convert(X *pthis, XFuncType function_to_bind,
-		GenericMemFuncType &bound_func) {
-		// There is an apalling but obscure compiler bug in MSVC6 and earlier:
-		// vtable_index and 'vtordisp' are always set to 0 in the
-		// unknown_inheritance case!
-		// This means that an incorrect function could be called!!!
-		// Compiling with the /vmg option leads to potentially incorrect code.
-		// This is probably the reason that the IDE has a user interface for specifying
-		// the /vmg option, but it is disabled -  you can only specify /vmg on
-		// the command line. In VC1.5 and earlier, the compiler would ICE if it ever
-		// encountered this situation.
-		// It is OK to use the /vmg option if /vmm or /vms is specified.
-
-		// Fortunately, the wrong function is only called in very obscure cases.
-		// It only occurs when a derived class overrides a virtual function declared
-		// in a virtual base class, and the member function
-		// points to the *Derived* version of that function. The problem can be
-		// completely averted in 100% of cases by using the *Base class* for the
-		// member fpointer. Ie, if you use the base class as an interface, you'll
-		// stay out of trouble.
-		// Occasionally, you might want to point directly to a derived class function
-		// that isn't an override of a base class. In this case, both vtable_index
-		// and 'vtordisp' are zero, but a virtual_inheritance pointer will be generated.
-		// We can generate correct code in this case. To prevent an incorrect call from
-		// ever being made, on MSVC6 we generate a warning, and call a function to
-		// make the program crash instantly.
-		static_assert(true, "VC6 Compiler Bug");
-		return 0;
-	}
-};
-
-
-#else
-
 // Nasty hack for Microsoft and Intel (IA32 and Itanium)
 // unknown_inheritance classes go here
 // This is probably the ugliest bit of code I've ever written. Look at the casts!
@@ -512,7 +422,6 @@ struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 3*sizeof(int) >
 			reinterpret_cast<char *>(pthis) + u.s.delta + virtual_delta);
 	};
 };
-#endif // MSVC 7 and greater
 
 #endif // MS/Intel hacks
 
@@ -1039,35 +948,21 @@ public:
 // That's why two classes (X and Y) appear in the definitions. Y must be implicitly
 // castable to X.
 
-// Workaround for VC6. VC6 needs void return types converted into DefaultVoid.
-// GCC 3.2 and later won't compile this unless it's preceded by 'typename',
-// but VC6 doesn't allow 'typename' in this context.
-// So, I have to use a macro.
-
-#ifdef FASTDLGT_VC6
-#define FASTDLGT_RETTYPE detail::VoidToDefaultVoid<RetType>::type
-#else
-#define FASTDLGT_RETTYPE RetType
-#endif
-
 //N=1
 template <class X, class Y, class RetType, class ... Params>
-FastDelegate<FASTDLGT_RETTYPE, Params...> MakeDelegate(Y* x, RetType (X::*func)(Params... params)) {
-	return FastDelegate<FASTDLGT_RETTYPE, Params...>(x, func);
+FastDelegate<RetType, Params...> MakeDelegate(Y* x, RetType (X::*func)(Params... params)) {
+	return FastDelegate<RetType, Params...>(x, func);
 }
 
 template <class X, class Y, class RetType, class ... Params>
-FastDelegate<FASTDLGT_RETTYPE, Params...> MakeDelegate(Y* x, RetType (X::*func)(Params... params) const) {
-	return FastDelegate<FASTDLGT_RETTYPE, Params...>(x, func);
+FastDelegate<RetType, Params...> MakeDelegate(Y* x, RetType (X::*func)(Params... params) const) {
+	return FastDelegate<RetType, Params...>(x, func);
 }
 
 template <class RetType, class ... Params>
-FastDelegate<FASTDLGT_RETTYPE, Params...> MakeDelegate(RetType (*func)(Params... params)) {
-	return FastDelegate<FASTDLGT_RETTYPE, Params...>(func);
+FastDelegate<RetType, Params...> MakeDelegate(RetType (*func)(Params... params)) {
+	return FastDelegate<RetType, Params...>(func);
 }
-
- // clean up after ourselves...
-#undef FASTDLGT_RETTYPE
 
 } // namespace fastdelegate
 

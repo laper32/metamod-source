@@ -145,15 +145,6 @@ namespace SourceHook
 	};
 
 	/**
-	*	@brief Implicit cast.
-	*/
-	template <class In, class Out>
-		inline Out implicit_cast(In input)
-		{
-			return input;
-		}
-
-	/**
 	*	@brief A plugin typedef
 	*
 	*	SourceHook doesn't really care what this is. As long as the ==, != and = operators work on it and every

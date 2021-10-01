@@ -26,10 +26,7 @@ namespace SourceHook
 	// I use it instead of static_cast<> to emphasize that I'm not doing
 	// anything nasty. 
 	// Usage is identical to static_cast<>
-	template <class OutputClass, class InputClass>
-	inline OutputClass implicit_cast(InputClass input){
-		return input;
-	}
+	template<class Out> constexpr inline auto implicit_cast = [](const auto& in) { return in; };
 
 
 	struct MemFuncInfo
