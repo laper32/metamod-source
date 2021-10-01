@@ -44,8 +44,6 @@
 #define BINARY_EXT ".dll"
 #elif defined(__linux__)
 #define BINARY_EXT ".so"
-#elif defined(__APPLE__)
-#define BINARY_EXT ".dylib"
 #endif
 
 using namespace SourceMM;
@@ -497,7 +495,7 @@ mm_StartupMetamod(bool is_vsp_load)
 		ConVarFlag_SpOnly);
 
 	mm_basedir = provider->CreateConVar("mm_basedir",
-#if defined __linux__ || defined __APPLE__
+#if defined __linux__
 		"addons/metamod",
 #else
 		"addons\\metamod",
@@ -1250,12 +1248,6 @@ size_t MetamodSource::GetFullPluginPath(const char *plugin, char *buffer, size_t
 	{
 #if defined(WIN32) || defined(_WIN32)
 #if defined(WIN64) || defined(_WIN64)
-		ext = X64_SUFFIX BINARY_EXT;
-#else
-		ext = BINARY_EXT;
-#endif
-#elif defined __APPLE__
-#if defined (__x86_64__)
 		ext = X64_SUFFIX BINARY_EXT;
 #else
 		ext = BINARY_EXT;

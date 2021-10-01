@@ -53,13 +53,8 @@
 	#define PATH_SIZE			MAX_PATH
 	#define strcasecmp			stricmp
 	inline bool _IsPathSepChar(char c) { return (c == '/' || c == '\\'); }
-#elif defined __linux__ || defined __APPLE__
-	#if defined __linux__
-		#define OS_LINUX
-	#elif defined __APPLE__
-		#define OS_DARWIN
-		#include <sys/syslimits.h>
-	#endif
+#elif defined __linux__ 
+	#define OS_LINUX
 	#include <dlfcn.h>
 	#include <unistd.h>
 	#include <sys/types.h>
@@ -80,7 +75,7 @@
 	inline bool _IsPathSepChar(char c) { return (c == '/'); }
 #endif
 
-#if defined __linux__ || defined __APPLE__
+#if defined __linux__ 
 	#include <errno.h>
 	int GetLastError();
 #endif
@@ -102,7 +97,7 @@ bool GetFileOfAddress(void *pAddr, char *buffer, size_t maxlength);
 #include <stdint.h>
 #endif
 
-#if !defined __linux__ && !defined __APPLE__
+#if !defined __linux__
 	#define snprintf	_snprintf
 	#if defined _MSC_VER && _MSC_VER < 1500
 		#define vsnprintf	_vsnprintf

@@ -29,7 +29,6 @@
 // System
 #define SH_SYS_WIN32	1
 #define SH_SYS_LINUX	2
-#define SH_SYS_APPLE	3
 
 // Platform
 #define SH_XP_POSIX		10
@@ -50,21 +49,16 @@
 #define	PATH_SEP_STR		"\\"
 #define PATH_SEP_CHAR		'\\'
 #define ALT_SEP_CHAR		'/'
-#elif defined __linux__ || defined __APPLE__
-#if defined __linux__
+#elif defined __linux__ 
 #define SH_SYS				SH_SYS_LINUX
-#elif defined __APPLE__
-#define SH_SYS				SH_SYS_APPLE
-#endif
+
 #define SH_XP               SH_XP_POSIX
 #define SH_COMP             SH_COMP_GCC
 #include <dlfcn.h>
 #include <dirent.h>
 #include <stdint.h>
 #include <unistd.h>
-#if SH_SYS == SH_SYS_APPLE
-#include <sys/syslimits.h>
-#endif
+
 typedef void *	HMODULE;
 #define PLATFORM_MAX_PATH	PATH_MAX
 #define	PATH_SEP_STR		"/"

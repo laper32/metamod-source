@@ -33,9 +33,6 @@
 #include "serverplugin.h"
 #include "gamedll.h"
 #include "utility.h"
-#if defined __APPLE__
-#include <crt_externs.h>
-#endif
 
 static HMODULE mm_library = NULL;
 static char mm_fatal_logfile[PLATFORM_MAX_PATH] = "metamod-fatal.log";
@@ -97,9 +94,6 @@ static const char *backend_names[] =
 #if defined _WIN32
 #define LIBRARY_EXT		".dll"
 #define LIBRARY_MINEXT	".dll"
-#elif defined __APPLE__
-#define LIBRARY_EXT		".dylib"
-#define LIBRARY_MINEXT	".dylib"
 #elif defined __linux__
 #define LIBRARY_EXT		LIB_SUFFIX
 #define LIBRARY_MINEXT	".so"
@@ -225,26 +219,6 @@ mm_GetGameName(char *buffer, size_t size)
 	}
 
 	LocalFree(wargv);
-
-#elif defined __APPLE__
-	int argc = *_NSGetArgc();
-	char **argv = *_NSGetArgv();
-	for (int i = 0; i < argc; ++i)
-	{
-		if (strcmp(argv[i], "-game") == 0)
-		{
-			if (++i >= argc)
-				break;
-
-			strncpy(buffer, argv[i], size);
-			buffer[size-1] = '\0';
-		}
-		else if (strcmp(argv[i], "-dedicated") == 0)
-		{
-			bHasDedicated = true;
-		}
-	}
-
 #elif defined __linux__
 	FILE *pFile = fopen("/proc/self/cmdline", "rb");
 	if (pFile)

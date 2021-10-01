@@ -39,8 +39,6 @@
 
 #define PAGE_SIZE			4096
 #define PAGE_ALIGN_UP(x)	((x + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
-#elif defined __APPLE__
-#include <mach-o/loader.h>
 #endif
 
 #if defined _WIN32
@@ -300,7 +298,7 @@ mm_ResolvePath(const char *path, char *buffer, size_t maxlength, bool bSource2)
 	}
 #if defined _WIN32
 	return _fullpath(buffer, path, maxlength) != NULL;
-#elif defined __linux__ || defined __APPLE__
+#elif defined __linux__ 
 	assert(maxlength >= PATH_MAX);
 	return realpath(path, buffer) != NULL;
 #endif
@@ -319,7 +317,7 @@ mm_LoadLibrary(const char *path, char *buffer, size_t maxlength)
 		mm_GetPlatformError(buffer, maxlength);
 		return NULL;
 	}
-#elif defined __linux__ || defined __APPLE__
+#elif defined __linux__ 
 	lib = dlopen(path, RTLD_NOW);
 
 	if (lib == NULL)
@@ -337,7 +335,7 @@ mm_GetLibAddress(void *lib, const char *name)
 {
 #if defined _WIN32
 	return GetProcAddress((HMODULE)lib, name);
-#elif defined __linux__ || defined __APPLE__
+#elif defined __linux__ 
 	return dlsym(lib, name);
 #endif
 }
@@ -347,7 +345,7 @@ mm_UnloadLibrary(void *lib)
 {
 #if defined _WIN32
 	FreeLibrary((HMODULE)lib);
-#elif defined __linux__ || defined __APPLE__
+#elif defined __linux__ 
 	dlclose(lib);
 #endif
 }
@@ -363,7 +361,7 @@ mm_GetFileOfAddress(void *pAddr, char *buffer, size_t maxlength)
 		return false;
 	HMODULE dll = (HMODULE)mem.AllocationBase;
 	GetModuleFileName(dll, (LPTSTR)buffer, static_cast<DWORD>(maxlength));
-#elif defined __linux__ || defined __APPLE__
+#elif defined __linux__ 
 	Dl_info info;
 	if (!dladdr(pAddr, &info))
 		return false;
@@ -519,76 +517,6 @@ mm_GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 			break;
 		}
 	}
-
-#elif defined __APPLE__
-
-#ifdef __x86_64__
-	typedef struct mach_header_64 MachHeader;
-	typedef struct segment_command_64 MachSegment;
-	const uint32_t MACH_MAGIC = MH_MAGIC_64;
-	const uint32_t MACH_LOADCMD_SEGMENT = LC_SEGMENT_64;
-	const cpu_type_t MACH_CPU_TYPE = CPU_TYPE_X86_64;
-	const cpu_subtype_t MACH_CPU_SUBTYPE = CPU_SUBTYPE_X86_64_ALL;
-#else
-	typedef struct mach_header MachHeader;
-	typedef struct segment_command MachSegment;
-	const uint32_t MACH_MAGIC = MH_MAGIC;
-	const uint32_t MACH_LOADCMD_SEGMENT = LC_SEGMENT;
-	const cpu_type_t MACH_CPU_TYPE = CPU_TYPE_I386;
-	const cpu_subtype_t MACH_CPU_SUBTYPE = CPU_SUBTYPE_I386_ALL;
-#endif
-
-	Dl_info info;
-	MachHeader *file;
-	MachSegment *seg;
-	uint32_t cmd_count;
-
-	if (!dladdr(libPtr, &info))
-	{
-		return false;
-	}
-
-	if (!info.dli_fbase || !info.dli_fname)
-	{
-		return false;
-	}
-
-	/* This is for our insane sanity checks :o */
-	baseAddr = (uintptr_t)info.dli_fbase;
-	file = (MachHeader *)baseAddr;
-
-	/* Check Mach-O magic */
-	if (file->magic != MACH_MAGIC)
-	{
-		return false;
-	}
-
-	/* Check architecture */
-	if (file->cputype != MACH_CPU_TYPE || file->cpusubtype != MACH_CPU_SUBTYPE)
-	{
-		return false;
-	}
-
-	/* For our purposes, this must be a dynamic library */
-	if (file->filetype != MH_DYLIB)
-	{
-		return false;
-	}
-
-	cmd_count = file->ncmds;
-	seg = (MachSegment *)(baseAddr + sizeof(MachHeader));
-
-	/* Add up memory sizes of mapped segments */
-	for (uint32_t i = 0; i < cmd_count; i++)
-	{
-		if (seg->cmd == MACH_LOADCMD_SEGMENT)
-		{
-			lib.memorySize += seg->vmsize;
-		}
-
-		seg = (MachSegment  *)((uintptr_t)seg + seg->cmdsize);
-	}
-
 #endif
 
 	lib.baseAddress = reinterpret_cast<void *>(baseAddr);

@@ -1869,14 +1869,6 @@ namespace SourceHook
 						// MSVC seems to return _all_ structs, classes, unions in memory
 						pi.flags |= PassInfo::PassFlag_RetMem;
 #elif SH_COMP == SH_COMP_GCC
-#if SH_SYS == SH_SYS_APPLE
-						// Apple GCC returns in memory if size isn't a power of 2 or > 8
-						if ((pi.size & (pi.size - 1)) == 0 && pi.size <= 8)
-						{
-							pi.flags |= PassInfo::PassFlag_RetReg;
-						}
-						else
-#endif
 						{
 							// GCC on Linux does same thing as MSVC
 							pi.flags |= PassInfo::PassFlag_RetMem;

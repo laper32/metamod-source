@@ -65,13 +65,6 @@ static bool g_is_source2 = false;
 #else
 #define PLATFORM_NAME		"win32"
 #endif
-#elif defined __APPLE__
-#define SERVER_NAME			"server.dylib"
-#if defined __amd64__
-#define PLATFORM_NAME		"osx64"
-#else
-#define PLATFORM_NAME		"osx32"
-#endif
 #elif defined __linux__
 #if defined __amd64__
 // hackhack - source2 uses libserver as name on POSIX, but source1 x64 does not
