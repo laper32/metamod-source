@@ -43,4 +43,8 @@ target_include_directories(metamod PUBLIC
 
 target_link_libraries(metamod PUBLIC sdk_wrapper server)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	target_compile_options(metamod PRIVATE -Wno-format-truncation)
+endif()
+
 set_target_properties(metamod PROPERTIES PREFIX "" SUFFIX ".2.${HL2SDK_ENGINE_NAME}${HL2SDK_LIB_SHARED_EXT}")

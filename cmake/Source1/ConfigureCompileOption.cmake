@@ -45,7 +45,7 @@ if(NOT WIN32)
         add_link_options(-m32)
     endif()
 
-    add_compile_options(-Wno-narrowing -Wno-c++11-narrowing -Wno-register -O3 -pipe -Wno-uninitialized -Wno-unused 
+    add_compile_options(-Wno-narrowing -Wno-register -O3 -pipe -Wno-uninitialized -Wno-unused 
     -Wno-switch -msse -fPIC -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-unused-result -Wno-ignored-attributes
     -fno-strict-aliasing
     )
@@ -58,7 +58,7 @@ if(NOT WIN32)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_compile_options(-Wno-implicit-int-float-conversion -Wno-tautological-overlap-compare -Wno-deprecated-volatile
         -Wno-implicit-exception-spec-mismatch -Wno-expansion-to-defined -Wno-inconsistent-missing-override -Wno-deprecated-register
-        -Wno-ambiguous-reversed-operator -Wno-tautological-undefined-compare -Wno-enum-compare-switch
+        -Wno-ambiguous-reversed-operator -Wno-tautological-undefined-compare -Wno-enum-compare-switch -Wno-c++11-narrowing
         )
     endif()
 endif()
