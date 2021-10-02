@@ -46,7 +46,8 @@ static void
 mm_GetPlatformError(char *buffer, size_t maxlength)
 {
 	DWORD dw = GetLastError();
-	FormatMessageA(
+	
+	FormatMessage(
 		FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL,
 		dw,

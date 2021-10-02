@@ -40,6 +40,8 @@
 # include <unistd.h>
 #endif
 
+#include <mm_utility.h>
+
 using namespace std::string_literals;
 
 /**
