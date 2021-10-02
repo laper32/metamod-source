@@ -3,6 +3,24 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# CMake configuration for Visual Studio
+CMakeSettings.json
+
+# Default output build
+out/
+
+# Our build folder
+build/
+
+# Visual Studio code
+.vscode/
+
+# Intellij Series
+.idea/
+
+# Dependency
+dependency/
+
 # User-specific files
 *.rsuser
 *.suo
@@ -229,6 +247,8 @@ ClientBin/
 *.pfx
 *.publishsettings
 orleans.codegen.cs
+
+
 
 # Including strong name files can present a security risk
 # (https://github.com/github/gitignore/pull/2483#issue-259490424)

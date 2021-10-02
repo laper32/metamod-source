@@ -1,0 +1,6 @@
+set(HL2SDK_USE_VENDOR ON CACHE INTERNAL "Determine the hl2sdk uses local folder or environment variable.")
+set(ENABLE_PDB ON CACHE INTERNAL "Enable debugging symbols (aka pdb).")
+set(ENABLE_OPTIMIZE ON CACHE INTERNAL "Enable optimization.")
+set(HL2SDK_ENGINE_NAME "" CACHE INTERNAL "Build against specified SDKs.")
+set(TARGET_ARCH "" CACHE INTERNAL "Override the target architecture. (x86|x64)")
+set(SOURCE2 OFF CACHE INTERNAL "Do we need to build source 2?")
