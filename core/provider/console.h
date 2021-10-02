@@ -31,7 +31,7 @@
 #include <interface.h>
 #include "convar.h"
 #include <eiface.h>
-#include <sh_list.h>
+#include <list>
 
 class SMConVarAccessor : public IConCommandBaseAccessor
 {
@@ -46,7 +46,7 @@ private:
 	ConCommandBase **m_TopConCommandBase;
 #endif
 private:
-	SourceHook::List<ConCommandBase *> m_RegisteredCommands;
+	std::list<ConCommandBase *> m_RegisteredCommands;
 };
 
 extern SMConVarAccessor g_SMConVarAccessor;

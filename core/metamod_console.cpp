@@ -252,7 +252,7 @@ bool Command_Meta(IMetamodSourceCommandInfo *info)
 				else
 				{
 					CONMSG("Console commands for %s:\n", pl->m_API->GetName());
-					List<ConCommandBase *>::iterator ci;
+					std::list<ConCommandBase *>::iterator ci;
 					size_t count = 0;
 
 					for (ci=pl->m_Cmds.begin(); ci!=pl->m_Cmds.end(); ci++)
@@ -289,7 +289,7 @@ bool Command_Meta(IMetamodSourceCommandInfo *info)
 				else
 				{
 					CONMSG("Registered cvars for %s:\n", pl->m_API->GetName());
-					List<ConCommandBase *>::iterator ci;
+					std::list<ConCommandBase *>::iterator ci;
 					size_t count = 0;
 
 					for (ci=pl->m_Cvars.begin(); ci!=pl->m_Cvars.end(); ci++)
@@ -490,7 +490,7 @@ bool Command_Meta(IMetamodSourceCommandInfo *info)
 			}
 			else
 			{
-				List<CNameAlias *>::iterator iter, end;
+				std::list<CNameAlias *>::iterator iter, end;
 				CNameAlias *p;
 
 				iter = g_PluginMngr._alias_begin();
@@ -536,7 +536,7 @@ bool Command_Meta(IMetamodSourceCommandInfo *info)
 
 					g_Metamod.GetFullPluginPath(file, full_path, sizeof(full_path));
 
-					List<CPluginManager::CPlugin *>::iterator iter, end;
+					std::list<CPluginManager::CPlugin *>::iterator iter, end;
 					CPluginManager::CPlugin *pl;
 					iter = g_PluginMngr._begin();
 					end = g_PluginMngr._end();

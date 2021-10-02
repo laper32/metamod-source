@@ -36,7 +36,7 @@
 #include <interface.h>
 #include <eiface.h>
 #include <convar.h>
-#include <sh_list.h>
+#include <list>
 #include <sh_string.h>
 #include <IPluginManager.h>
 #include <ISmmPluginExt.h>
@@ -90,9 +90,9 @@ public:
 		PluginId m_Source;
 		ISmmPlugin *m_API;
 		HINSTANCE m_Lib;
-		SourceHook::List<ConCommandBase *> m_Cvars;
-		SourceHook::List<ConCommandBase *> m_Cmds;
-		SourceHook::List<IMetamodListener *> m_Events;
+		std::list<ConCommandBase *> m_Cvars;
+		std::list<ConCommandBase *> m_Cmds;
+		std::list<IMetamodListener *> m_Events;
 		METAMOD_FN_UNLOAD m_UnloadFn;
 	};
 public:
@@ -141,12 +141,12 @@ public:
 
 	//get alias info
 	const char *LookupAlias(const char *alias);
-	SourceHook::List<CNameAlias *>::iterator _alias_begin();
-	SourceHook::List<CNameAlias *>::iterator _alias_end();
+	std::list<CNameAlias *>::iterator _alias_begin();
+	std::list<CNameAlias *>::iterator _alias_end();
 
 	//Internal iterators
-	SourceHook::List<CPluginManager::CPlugin *>::iterator _begin();
-	SourceHook::List<CPluginManager::CPlugin *>::iterator _end();
+	std::list<CPluginManager::CPlugin *>::iterator _begin();
+	std::list<CPluginManager::CPlugin *>::iterator _end();
 private:
 	//These are identical internal functions for the wrappers above.
 	CPlugin *_Load(const char *file, PluginId source, char *error, size_t maxlen);
@@ -156,12 +156,12 @@ private:
 	void UnregAllConCmds(CPlugin *pl);
 private:
 	PluginId m_LastId;
-	SourceHook::List<CPlugin *> m_Plugins;
-	SourceHook::List<CNameAlias *> m_Aliases;
+	std::list<CPlugin *> m_Plugins;
+	std::list<CNameAlias *> m_Aliases;
 	bool m_AllLoaded;
 };
 
-typedef SourceHook::List<CPluginManager::CPlugin *>::iterator PluginIter;
+typedef std::list<CPluginManager::CPlugin *>::iterator PluginIter;
 
 /** @brief Singleton for plugin manager */
 extern CPluginManager g_PluginMngr;

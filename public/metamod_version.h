@@ -32,8 +32,8 @@
 #pragma once
 
 #define MMS_BUILD_TAG		"dev"
-#define MMS_BUILD_LOCAL_REV	"9"
-#define MMS_BUILD_CSET		"5270112"
+#define MMS_BUILD_LOCAL_REV	"10"
+#define MMS_BUILD_CSET		"b1f9db1"
 #define MMS_BUILD_MAJOR		"1"
 #define MMS_BUILD_MINOR		"12"
 #define MMS_BUILD_RELEASE	"0"

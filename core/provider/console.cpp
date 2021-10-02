@@ -61,7 +61,7 @@ bool SMConVarAccessor::Register(ConCommandBase *pCommand)
 
 void SMConVarAccessor::RemoveMetamodCommands()
 {
-	List<ConCommandBase *>::iterator iter;
+	std::list<ConCommandBase *>::iterator iter;
 
 	for (iter = m_RegisteredCommands.begin(); iter != m_RegisteredCommands.end(); iter++)
 	{
