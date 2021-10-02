@@ -29,7 +29,7 @@
 #include <eiface.h>
 #include <iplayerinfo.h>
 #include <assert.h>
-#include <loader_bridge.h>
+#include <metamod_gamedllinterace.h>
 #include <metamod_version.h>
 #include <sh_string.h>
 #include "provider/provider_ep2.h"

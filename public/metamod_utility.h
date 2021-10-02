@@ -797,6 +797,8 @@ static inline std::vector<std::string> SplitPath(const char* path) {
 
 bool inline Relatize2(char* buffer, size_t maxlen, const char* path1, const char* path2)
 {
+    using namespace std::string_literals;
+
     auto parts1 = SplitPath(path1);
     auto parts2 = SplitPath(path2);
 

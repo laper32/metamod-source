@@ -27,7 +27,7 @@
 #include "metamod.h"
 #include "metamod_plugins.h"
 #include "metamod_util.h"
-#include <loader_bridge.h>
+#include <metamod_gamedllinterace.h>
 #include "provider/provider_ep2.h"
 
 using namespace SourceMM;

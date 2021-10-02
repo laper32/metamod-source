@@ -447,6 +447,7 @@ public:
 						 QueryValveInterface fileSystemFactory, 
 						 void *pGlobals)
 	{
+		mm_LogFatal("IServerGameDLL::DLLInit - With purpose - To trigger it");
 		mm_backend = mm_DetermineBackend(engineFactory, gamedll_qvi, game_name);
 
 		char error[255];
