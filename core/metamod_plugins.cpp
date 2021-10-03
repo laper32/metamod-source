@@ -38,7 +38,7 @@ using namespace SourceMM;
 
 #define ITER_PLEVENT(evn, plid) \
 	CPluginManager::CPlugin *_Xpl; \
-	SourceHook::List<IMetamodListener *>::iterator event; \
+	std::list<IMetamodListener *>::iterator event; \
 	IMetamodListener *api; \
 	for (PluginIter iter = g_PluginMngr._begin(); iter != g_PluginMngr._end(); iter++) { \
 		_Xpl = (*iter); \
@@ -72,7 +72,7 @@ CPluginManager::CPluginManager()
 
 CPluginManager::~CPluginManager()
 {
-	SourceHook::List<CNameAlias *>::iterator iter;
+	std::list<CNameAlias *>::iterator iter;
 
 	for (iter = m_Aliases.begin(); iter != m_Aliases.end(); iter++)
 	{
@@ -84,7 +84,8 @@ CPluginManager::~CPluginManager()
 
 const char *CPluginManager::LookupAlias(const char *alias)
 {
-	SourceHook::List<CNameAlias *>::iterator iter;
+	std::list<CNameAlias *>::iterator iter;
+
 	CNameAlias *p;
 
 	for (iter = m_Aliases.begin(); iter != m_Aliases.end(); iter++)
@@ -99,19 +100,19 @@ const char *CPluginManager::LookupAlias(const char *alias)
 	return NULL;
 }
 
-SourceHook::List<CNameAlias *>::iterator CPluginManager::_alias_begin()
+std::list<CNameAlias *>::iterator CPluginManager::_alias_begin()
 {
 	return m_Aliases.begin();
 }
 
-SourceHook::List<CNameAlias *>::iterator CPluginManager::_alias_end()
+std::list<CNameAlias *>::iterator CPluginManager::_alias_end()
 {
 	return m_Aliases.end();
 }
 
 void CPluginManager::SetAlias(const char *alias, const char *value)
 {
-	SourceHook::List<CNameAlias *>::iterator iter;
+	std::list<CNameAlias *>::iterator iter;
 	CNameAlias *p;
 
 	for (iter = m_Aliases.begin(); iter != m_Aliases.end(); iter++)
@@ -837,7 +838,7 @@ void CPluginManager::RemovePluginCmd(ISmmPlugin *api, ConCommandBase *pCmd)
 
 void CPluginManager::UnregAllConCmds(CPlugin *pl)
 {
-	SourceHook::List<ConCommandBase *>::iterator i;
+	std::list<ConCommandBase *>::iterator i;
 
 	/* :TODO: */
 	for (i=pl->m_Cvars.begin(); i!=pl->m_Cvars.end(); i++)

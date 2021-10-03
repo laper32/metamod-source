@@ -41,7 +41,7 @@ target_include_directories(metamod PUBLIC
 	${CMAKE_SOURCE_DIR}/public/sourcehook
 )
 
-target_link_libraries(metamod PUBLIC sdk_wrapper server)
+target_link_libraries(metamod PUBLIC sdk_wrapper)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	target_compile_options(metamod PRIVATE -Wno-format-truncation)

@@ -93,7 +93,7 @@ void LocalCommand_Meta();
 void _ServerCommand();
 /* Variables */
 static BaseProvider g_Ep1Provider;
-static List<ConCommandBase *> conbases_unreg;
+static std::list<ConCommandBase *> conbases_unreg;
 static CVector<UsrMsgInfo> usermsgs_list;
 static jmp_buf usermsg_end;
 static bool g_bOriginalEngine = false;

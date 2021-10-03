@@ -116,7 +116,7 @@ static String full_bin_path;
 static int vsp_version = 0;
 static int gamedll_version = 0;
 static int engine_build = SOURCE_ENGINE_UNKNOWN;
-static List<game_dll_t *> gamedll_list;
+static std::list<game_dll_t *> gamedll_list;
 static bool is_gamedll_loaded = false;
 static bool in_first_level = true;
 static bool is_game_init = false;
@@ -146,7 +146,7 @@ SourceMM::ISmmAPI *g_pMetamod = &g_Metamod;
 /* Helper Macro */
 #define	IFACE_MACRO(orig,nam) \
 	CPluginManager::CPlugin *pl; \
-	SourceHook::List<IMetamodListener *>::iterator event; \
+	std::list<IMetamodListener *>::iterator event; \
 	IMetamodListener *api; \
 	int mret = 0; \
 	void *val = NULL; \
@@ -165,7 +165,7 @@ SourceMM::ISmmAPI *g_pMetamod = &g_Metamod;
 
 #define ITER_EVENT(evn, args) \
 	CPluginManager::CPlugin *pl; \
-	SourceHook::List<IMetamodListener *>::iterator event; \
+	std::list<IMetamodListener *>::iterator event; \
 	IMetamodListener *api; \
 	for (PluginIter iter = g_PluginMngr._begin(); iter != g_PluginMngr._end(); iter++) { \
 		pl = (*iter); \
@@ -1024,7 +1024,7 @@ void *MetamodSource::MetaFactory(const char *iface, int *ret, PluginId *id)
 	}
 
 	CPluginManager::CPlugin *pl;
-	List<IMetamodListener *>::iterator event;
+	std::list<IMetamodListener *>::iterator event;
 	IMetamodListener *api;
 	void *value;
 	
@@ -1121,7 +1121,7 @@ void MetamodSource::UnregisterConCommandBase(PluginId id, ConCommandBase *pComma
 {
 	PluginIter iter;
 	CPluginManager::CPlugin *pPlugin;
-	List<IMetamodListener *>::iterator event;
+	std::list<IMetamodListener *>::iterator event;
 	IMetamodListener *pML;
 	for (iter=g_PluginMngr._begin(); iter!=g_PluginMngr._end(); iter++)
 	{

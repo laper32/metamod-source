@@ -39,6 +39,11 @@
 
 NAMESPACE_METAMOD_BEGIN
 
+//
+// Utility, part 1.
+// Ported from loader/utility{.h, .cpp}
+//
+
 // only accepts char/wchar_t
 // otherwise is not accepted
 template<typename T> concept Char_c = std::same_as<T, char> || std::same_as<T, wchar_t>;
@@ -526,35 +531,336 @@ inline bool ResolvePath(const char* path, char* buffer, size_t maxlength, bool b
 NAMESPACE_METAMOD_DETAIL_END
 
 template<class...Args>
-inline size_t Format(char* buffer, size_t maxlen, const char* fmt, Args...args) { return detail::Format(buffer, maxlen, fmt, args...); }
+inline size_t Format(char* buffer, size_t maxlen, const char* fmt, Args...args) { 
+    return detail::Format(buffer, maxlen, fmt, args...); 
+}
 
 // Using LoadLib instead of LoadLibrary to avoid conflict of the macro of LoadLibrary......
-inline void* LoadLib(const char* path, char* buffer, size_t maxlength) { return detail::LoadLib(path, buffer, maxlength); }
+inline void* LoadLib(const char* path, char* buffer, size_t maxlength) { 
+    return detail::LoadLib(path, buffer, maxlength); 
+}
 
-inline void* GetLibAddress(void* lib, const char* name) { return detail::GetLibAddress(lib, name); }
+inline void* GetLibAddress(void* lib, const char* name) { 
+    return detail::GetLibAddress(lib, name); 
+}
 
 inline void UnloadLib(void* lib) { detail::UnloadLib(lib); }
 
-inline bool ResolvePath(const char* path, char* buffer, size_t maxlength, bool source2) { return detail::ResolvePath(path, buffer, maxlength, source2); }
+inline bool ResolvePath(const char* path, char* buffer, size_t maxlength, bool source2) { 
+    return detail::ResolvePath(path, buffer, maxlength, source2); 
+}
 
 template<class...Args>
-inline size_t PathFormat(char* buffer, size_t maxlen, const char* fmt, Args...args) { return detail::PathFormat(buffer, maxlen, fmt, args...); }
+inline size_t PathFormat(char* buffer, size_t maxlen, const char* fmt, Args...args) {
+    return detail::PathFormat(buffer, maxlen, fmt, args...);
+}
 
 inline void TrimString(String_c auto& s) { detail::TrimString(s); }
 
 inline void RemoveComment(String_c auto& s) { detail::RemoveComment(s); }
 
 // TBD: Can change it to std::map?
-inline void KeySplit(const char* str, char* buf1, size_t len1, char* buf2, size_t len2) { detail::KeySplit(str, buf1, len1, buf2, len2); }
+inline void KeySplit(const char* str, char* buf1, size_t len1, char* buf2, size_t len2) { 
+    detail::KeySplit(str, buf1, len1, buf2, len2);
+}
 
 inline bool PathCmp(const std::string& p1, const std::string& p2) { return detail::PathCmp(p1, p2); }
 
-inline bool GetFileOfAddress(void* pAddr, char* buffer, size_t maxlength) { return detail::GetFileOfAddress(pAddr, buffer, maxlength); }
+inline bool GetFileOfAddress(void* pAddr, char* buffer, size_t maxlength) { 
+    return detail::GetFileOfAddress(pAddr, buffer, maxlength);
+}
 
-inline void* FindPattern(const void* libPtr, const char* pattern, size_t len) { return detail::FindPattern(libPtr, pattern, len); }
+inline void* FindPattern(const void* libPtr, const char* pattern, size_t len) {
+    return detail::FindPattern(libPtr, pattern, len);
+}
 
-std::string GetGameName() { return detail::GetGameName(); }
+//
+// Utility, part 2.
+// Ported from metamod_util{.h, .cpp}
+//
 
+NAMESPACE_METAMOD_DETAIL_BEGIN
 
+inline auto GetFileExt(std::string& in) -> std::string {
+    namespace fs = std::filesystem;
+    std::string ext = fs::path(in).extension().string();
+    // Note: The output extension has quote.
+    // We need to remove it...
+    ext.erase(std::remove(ext.begin(), ext.end(), '\"'), ext.end());
+    return ext;
+}
 
+inline bool pathchar_isalpha(char a)
+{
+    return (((a & 1 << 7) == 0) && isalpha(a));
+}
+
+inline bool pathchar_sep(char a)
+{
+#if defined WIN32
+    return (a == '/' || a == '\\');
+#else
+    return (a == '/');
+#endif
+}
+
+inline bool pathstr_isabsolute(const char* str)
+{
+#if defined WIN32
+    return (pathchar_isalpha(str[0])
+        && str[1] == ':'
+        && pathchar_sep(str[2]));
+#else
+    return (str[0] == '/');
+#endif
+}
+
+inline bool pathchar_cmp(char a, char b)
+{
+#if defined WIN32
+    if (pathchar_isalpha(a) && pathchar_isalpha(b))
+    {
+        return (tolower(a) == tolower(b));
+    }
+    /* Either path separator is acceptable */
+    if (pathchar_sep(a))
+    {
+        return pathchar_sep(b);
+    }
+#endif
+    return (a == b);
+}
+
+inline bool BadRelatize(char buffer[], size_t maxlength, const char* relTo, const char* relFrom)
+{
+    /* We don't allow relative paths in here, force
+     * the user to resolve these himself!
+     */
+    if (!pathstr_isabsolute(relTo)
+        || !pathstr_isabsolute(relFrom))
+    {
+        return false;
+    }
+
+#if defined WIN32
+    /* Relative paths across drives are not possible */
+    if (!pathchar_cmp(relTo[0], relFrom[0]))
+    {
+        return false;
+    }
+    /* Get rid of the drive and semicolon part */
+    relTo = &relTo[2];
+    relFrom = &relFrom[2];
+#endif
+
+    /* Eliminate the common root between the paths */
+    const char* rootTo = NULL;
+    const char* rootFrom = NULL;
+    while (*relTo != '\0' && *relFrom != '\0')
+    {
+        /* If we get to a new path sequence, start over */
+        if (pathchar_sep(*relTo)
+            && pathchar_sep(*relFrom))
+        {
+            rootTo = relTo;
+            rootFrom = relFrom;
+            /* If the paths don't compare, stop looking for a common root */
+        }
+        else if (!pathchar_cmp(*relTo, *relFrom)) {
+            break;
+        }
+        relTo++;
+        relFrom++;
+    }
+
+    /* NULLs shouldn't happen! */
+    if (rootTo == NULL
+        || rootFrom == NULL)
+    {
+        return false;
+    }
+
+    size_t numLevels = 0;
+
+    /* The root case is special!
+     * Don't count anything from it.
+     */
+    if (*(rootTo + 1) != '\0')
+    {
+        /* Search for how many levels we need to go up.
+         * Since the root pointer points to a '/', we increment
+         * the initial pointer by one.
+         */
+        while (*rootTo != '\0')
+        {
+            if (pathchar_sep(*rootTo))
+            {
+                /* Check for an improper trailing slash,
+                 * just to be nice even though the user
+                 * should NOT have done this!
+                 */
+                if (*(rootTo + 1) == '\0')
+                {
+                    break;
+                }
+                numLevels++;
+            }
+            rootTo++;
+        }
+    }
+
+    /* Now build the new relative path. */
+    size_t len, total = 0;
+    while (numLevels--)
+    {
+        len = snprintf(&buffer[total], maxlength - total, ".." PATH_SEP_STR);
+        if (len >= maxlength - total)
+        {
+            /* Not enough space in the buffer */
+            return false;
+        }
+        total += len;
+    }
+
+    /* Add the absolute path. */
+    len = snprintf(&buffer[total], maxlength - total, "%s", &rootFrom[1]);
+    if (len >= maxlength - total)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+inline bool VerifySignature(const void* addr, const char* sig, size_t len)
+{
+    unsigned char* addr1 = (unsigned char*)addr;
+    unsigned char* addr2 = (unsigned char*)sig;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        if (addr2[i] == '*')
+            continue;
+        if (addr1[i] != addr2[i])
+            return false;
+    }
+
+    return true;
+}
+
+static bool ComparePathComponent(const std::string& a, const std::string& b) {
+#ifdef _WIN32
+    if (a.size() != b.size())
+        return false;
+    for (size_t i = 0; i < a.size(); i++) {
+        if (!pathchar_cmp(a[i], b[i]))
+            return false;
+    }
+    return true;
+#else
+    return a == b;
+#endif
+}
+
+static inline std::vector<std::string> SplitPath(const char* path) {
+    std::vector<std::string> parts;
+
+    const char* iter = path;
+
+#ifdef _WIN32
+    if (isalpha(path[0]) && path[1] == ':' && pathchar_sep(path[2])) {
+        // Append drive only (eg C:)
+        parts.emplace_back(path, 2);
+        iter += 2;
+        while (pathchar_sep(*iter))
+            iter++;
+    }
+#endif
+
+    if (pathchar_sep(*iter)) {
+        parts.emplace_back(PATH_SEP_STR);
+        while (pathchar_sep(*iter))
+            iter++;
+    }
+
+    while (*iter) {
+        const char* start = iter;
+        while (*iter && !pathchar_sep(*iter))
+            iter++;
+        if (iter != start)
+            parts.emplace_back(start, iter - start);
+        while (pathchar_sep(*iter))
+            iter++;
+    }
+    return parts;
+}
+
+bool inline Relatize2(char* buffer, size_t maxlen, const char* path1, const char* path2)
+{
+    using namespace std::string_literals;
+
+    auto parts1 = SplitPath(path1);
+    auto parts2 = SplitPath(path2);
+
+    // If this fails, paths were not relative or have different drives.
+    if (parts1[0] != parts2[0])
+        return false;
+
+    // Skip past identical paths.
+    size_t cursor = 1;
+    while (true) {
+        if (cursor >= parts1.size() || cursor >= parts2.size())
+            break;
+        if (!ComparePathComponent(parts1[cursor], parts2[cursor]))
+            break;
+        cursor++;
+    }
+
+    std::string new_path;
+    for (size_t i = cursor; i < parts1.size(); i++)
+        new_path += ".."s + PATH_SEP_STR;
+    for (size_t i = cursor; i < parts2.size(); i++) {
+        new_path += parts2[i];
+        if (i != parts2.size() - 1)
+            new_path += PATH_SEP_STR;
+    }
+    if (pathchar_sep(path2[strlen(path2) - 1]))
+        new_path += PATH_SEP_STR;
+
+    snprintf(buffer, maxlen, "%s", new_path.c_str());
+    return true;
+}
+
+static inline bool PathExists(const char* path) {
+#ifdef _WIN32
+    return _access(path, 0) == 0 || errno != ENOENT;
+#else
+    return access(path, F_OK) == 0 || errno != ENOENT;
+#endif
+}
+
+inline bool Relatize(char buffer[], size_t maxlength, const char* relTo, const char* relFrom)
+{
+    if (BadRelatize(buffer, maxlength, relTo, relFrom)) {
+        if (PathExists(buffer))
+            return true;
+    }
+    return Relatize2(buffer, maxlength, relTo, relFrom);
+}
+
+NAMESPACE_METAMOD_DETAIL_END
+
+inline auto GetFileExt(std::string& in) -> std::string { return detail::GetFileExt(in); }
+
+inline auto Relatize(char buffer[], size_t maxlength, const char* relTo, const char* relFrom) -> bool {
+    return detail::Relatize(buffer, maxlength, relTo, relFrom);
+}
+
+inline auto Relatize2(char* buffer, size_t maxlen, const char* path1, const char* path2) -> bool {
+    return detail::Relatize2(buffer, maxlen, path1, path2);
+}
+
+inline auto VerifySignature(const void* addr, const char* sig, size_t len) -> bool { 
+    return detail::VerifySignature(addr, sig, len); 
+}
 NAMESPACE_METAMOD_END
