@@ -85,6 +85,7 @@ CPluginManager::~CPluginManager()
 const char *CPluginManager::LookupAlias(const char *alias)
 {
 	std::list<CNameAlias *>::iterator iter;
+
 	CNameAlias *p;
 
 	for (iter = m_Aliases.begin(); iter != m_Aliases.end(); iter++)

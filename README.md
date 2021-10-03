@@ -28,6 +28,7 @@ Build instructions:
       > 2. Add `-DTARGET_ARCH` is for generic linking library. :) Check hl2sdk, then you will know everything.
    6. Build the project. `cmake --build . --config Release`
       > Note: On Linux, you need to specify the process count used. For example: `cmake --build . --config Release -j 4` 
+---
 
 Stable build snapshots: <http://www.metamodsource.net/downloads.php/?branch=stable>
 

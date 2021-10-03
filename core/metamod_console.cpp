@@ -537,6 +537,7 @@ bool Command_Meta(IMetamodSourceCommandInfo *info)
 					g_Metamod.GetFullPluginPath(file, full_path, sizeof(full_path));
 
 					std::list<CPluginManager::CPlugin *>::iterator iter, end;
+
 					CPluginManager::CPlugin *pl;
 					iter = g_PluginMngr._begin();
 					end = g_PluginMngr._end();

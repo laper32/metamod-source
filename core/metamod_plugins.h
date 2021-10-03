@@ -147,6 +147,7 @@ public:
 	//Internal iterators
 	std::list<CPluginManager::CPlugin *>::iterator _begin();
 	std::list<CPluginManager::CPlugin *>::iterator _end();
+
 private:
 	//These are identical internal functions for the wrappers above.
 	CPlugin *_Load(const char *file, PluginId source, char *error, size_t maxlen);
@@ -162,6 +163,7 @@ private:
 };
 
 typedef std::list<CPluginManager::CPlugin *>::iterator PluginIter;
+
 
 /** @brief Singleton for plugin manager */
 extern CPluginManager g_PluginMngr;
