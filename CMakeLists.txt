@@ -6,6 +6,3 @@ set(CMAKE_CXX_STANDARD 20)
 include(configure.cmake)
 
 include(cmake/ConfigureMetaMod.cmake)
-
-add_subdirectory(core)
-add_subdirectory(loader)
