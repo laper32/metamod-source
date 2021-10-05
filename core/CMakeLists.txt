@@ -4,8 +4,6 @@ set(METAMOD_FILES
 	${CMAKE_CURRENT_LIST_DIR}/metamod_oslink.cpp
 	${CMAKE_CURRENT_LIST_DIR}/metamod_plugins.cpp
 	${CMAKE_CURRENT_LIST_DIR}/metamod_util.cpp
-	${CMAKE_CURRENT_LIST_DIR}/vsp_bridge.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/gamedll_bridge.cpp
 	${CMAKE_CURRENT_LIST_DIR}/provider/console.cpp
 	${CMAKE_CURRENT_LIST_DIR}/provider/provider_ep2.cpp
 )
