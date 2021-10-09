@@ -60,7 +60,7 @@ namespace SourceHook
 			return &m_Entries[realid];
 		}
 
-		void CHookIDManager::FindAllHooks(CVector<int> &output, const CProto &proto, int vtbl_offs,
+		void CHookIDManager::FindAllHooks(std::vector<int> &output, const CProto &proto, int vtbl_offs,
 			int vtbl_idx, void *adjustediface, Plugin plug, int thisptr_offs, ISHDelegate *handler, bool post)
 		{
 			// oh my god, a lot of parameters...
@@ -76,7 +76,7 @@ namespace SourceHook
 			}
 		}
 
-		void CHookIDManager::FindAllHooks(CVector<int> &output)
+		void CHookIDManager::FindAllHooks(std::vector<int> &output)
 		{
 			size_t cursize = m_Entries.size();
 			for (size_t i = 0; i < cursize; ++i)
@@ -86,7 +86,7 @@ namespace SourceHook
 			}
 		}
 
-		void CHookIDManager::FindAllHooks(CVector<int> &output, Plugin plug)
+		void CHookIDManager::FindAllHooks(std::vector<int> &output, Plugin plug)
 		{
 			size_t cursize = m_Entries.size();
 			for (size_t i = 0; i < cursize; ++i)

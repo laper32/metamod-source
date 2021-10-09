@@ -12,7 +12,7 @@
 #define __SOURCEHOOK_PIBUILDER_H__
 
 #include "sourcehook.h"
-#include "sh_vector.h"
+#include <vector>
 
 namespace SourceHook
 {
@@ -20,8 +20,8 @@ namespace SourceHook
 	class CProtoInfoBuilder
 	{
 		ProtoInfo m_PI;
-		CVector<PassInfo> m_Params;
-		CVector<PassInfo::V2Info> m_Params2;
+		std::vector<PassInfo> m_Params;
+		std::vector<PassInfo::V2Info> m_Params2;
 	public:
 		CProtoInfoBuilder(int cc)
 		{

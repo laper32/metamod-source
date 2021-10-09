@@ -144,25 +144,22 @@ namespace SourceHook
 
 		CIface *CVfnPtr::FindIface(void *iface)
 		{
-			List<CIface>::iterator iter = m_IfaceList.find(iface);
-			if (iter == m_IfaceList.end())
-				return NULL;
-			else
-				return &(*iter);
+			std::list<CIface>::iterator iter = std::find(std::begin(m_IfaceList), std::end(m_IfaceList), iface);
+			if (iter == m_IfaceList.end()) return nullptr;
+			else return &(*iter);
 		}
 
 		void CVfnPtr::AddHookMan(CHookManager *pHookMan)
 		{
-			List<CHookManager*>::iterator iter;
+			std::list<CHookManager*>::iterator iter;
 
 			// Don't accept invalid hook managers
 			if (!*pHookMan)
 				return;
 
 			// Check whether this hook manager already exists; if yes, ignore.
-			iter = m_HookMans.find(pHookMan);
-			if (iter != m_HookMans.end())
-				return;
+			iter = std::find(std::begin(m_HookMans), std::end(m_HookMans), pHookMan);
+			if (iter != m_HookMans.end()) return;
 
 			// It doesn't -> add it. Add it to the end of its version group.
 			for (iter = m_HookMans.begin(); iter != m_HookMans.end(); ++iter)
@@ -184,7 +181,7 @@ namespace SourceHook
 					// (which it is because it's the first -> it has a higher version)
 					// -> switch!
 
-					List<CHookManager*>::iterator second = m_HookMans.begin();
+					std::list<CHookManager*>::iterator second = m_HookMans.begin();
 					++second;
 
 					(*second)->DecrRef(this);
@@ -201,7 +198,7 @@ namespace SourceHook
 			if (!*pHookMan)
 				return true;
 
-			List<CHookManager*>::iterator iter = m_HookMans.find(pHookMan);
+			std::list<CHookManager*>::iterator iter = std::find(std::begin(m_HookMans), std::end(m_HookMans), pHookMan);
 			if (iter == m_HookMans.end())
 				return true;							// Didn't exist here anyway
 
@@ -239,11 +236,11 @@ namespace SourceHook
 
 		CIface &CVfnPtr::GetIface(void *iface)
 		{
-			List<CIface>::iterator iter = m_IfaceList.find(iface);
+			std::list<CIface>::iterator iter = std::find(std::begin(m_IfaceList), std::end(m_IfaceList), iface);
 			if (iter == m_IfaceList.end())
 			{
 				CIface newIface(iface);
-				if (iface == NULL)
+				if (iface == nullptr)
 				{
 					m_IfaceList.push_front(newIface);
 					return m_IfaceList.front();

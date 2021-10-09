@@ -11,7 +11,7 @@
 #ifndef __SOURCEHOOK_IMPL_CHOOKIDMAN_H__
 #define __SOURCEHOOK_IMPL_CHOOKIDMAN_H__
 
-#include "sh_vector.h"
+#include <vector>
 
 namespace SourceHook
 {
@@ -56,7 +56,7 @@ namespace SourceHook
 		private:
 			// Internally, hookid 1 is stored as m_Entries[0]
 
-			CVector<Entry> m_Entries;
+			std::vector<Entry> m_Entries;
 		public:
 			CHookIDManager();
 			int New(const CProto &proto, int vtbl_offs, int vtbl_idx, void *vfnptr, void *adjustediface,
@@ -65,14 +65,14 @@ namespace SourceHook
 			const Entry * QueryHook(int hookid);
 
 			// Finds all hooks with the given info, and fills the hookids into output.
-			void FindAllHooks(CVector<int> &output, const CProto &proto, int vtbl_offs, int vtbl_idx,
+			void FindAllHooks(std::vector<int> &output, const CProto &proto, int vtbl_offs, int vtbl_idx,
 				void *adjustediface, Plugin plug, int thisptr_offs, ISHDelegate *handler, bool post);
 
 			// Removes all hooks with a specified vfnptr
 			void RemoveAll(void *vfnptr);
 
-			void FindAllHooks(CVector<int> &output);
-			void FindAllHooks(CVector<int> &output, Plugin plug);
+			void FindAllHooks(std::vector<int> &output);
+			void FindAllHooks(std::vector<int> &output, Plugin plug);
 		};
 	}
 }

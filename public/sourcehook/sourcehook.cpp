@@ -48,7 +48,7 @@ namespace SourceHook
 
 		CVfnPtr *CVfnPtrList::GetVfnPtr(void *vfnptr)
 		{
-			iterator iter = find(vfnptr);
+			iterator iter = std::find(std::begin(*this), std::end(*this), vfnptr);
 			if (iter == end())
 			{
 				// No vfnptr info object found
@@ -180,7 +180,7 @@ namespace SourceHook
 
 			// Loop through all hooks and remove those which match:
 			//  hookman, vfnptr, iface, plug, adjusted iface, this ptr offs, handler, post
-			CVector<int> removehooks;
+			std::vector<int> removehooks;
 			m_HookIDMan.FindAllHooks(removehooks, tmpHookMan.GetProto(), tmpHookMan.GetVtblOffs(), tmpHookMan.GetVtblIdx(),
 				adjustediface, plug, thisptr_offs, handler, post);
 
@@ -189,7 +189,7 @@ namespace SourceHook
 
 			bool status = false;
 
-			for (CVector<int>::iterator iter = removehooks.begin(); iter != removehooks.end(); ++iter)
+			for (std::vector<int>::iterator iter = removehooks.begin(); iter != removehooks.end(); ++iter)
 			{
 				if (RemoveHookByID(*iter))
 					status = true;
@@ -209,25 +209,26 @@ namespace SourceHook
 			}
 
 			// find vfnptr
-			List<CVfnPtr>::iterator vfnptr_iter = m_VfnPtrs.find(hentry->vfnptr);
+			std::list<CVfnPtr>::iterator vfnptr_iter = std::find(std::begin(m_VfnPtrs), std::end(m_VfnPtrs), hentry->vfnptr);
+
 			if (vfnptr_iter == m_VfnPtrs.end())
 				return false;
 
 			// find iface
-			List<CIface>::iterator iface_iter = vfnptr_iter->GetIfaceList().find(hentry->adjustediface);
+			std::list<CIface>::iterator iface_iter = std::find(std::begin(vfnptr_iter->GetIfaceList()), std::end(vfnptr_iter->GetIfaceList()), hentry->adjustediface);
 			if (iface_iter == vfnptr_iter->GetIfaceList().end())
 				return false;
 
 			// find hook
-			List<CHook> &hooks = hentry->post ? iface_iter->GetPostHookList() : iface_iter->GetPreHookList();
-			List<CHook>::iterator hook_iter = hooks.find(hookid);
+			std::list<CHook> &hooks = hentry->post ? iface_iter->GetPostHookList() : iface_iter->GetPreHookList();
+			std::list<CHook>::iterator hook_iter = std::find(std::begin(hooks), std::end(hooks), hookid);
 			if (hook_iter == hooks.end())
 				return false;
 
 			hook_iter->GetHandler()->DeleteThis();
 
 			// Iterator movage!
-			List<CHook>::iterator oldhookiter = hook_iter;
+			std::list<CHook>::iterator oldhookiter = hook_iter;
 			hook_iter = hooks.erase(hook_iter);
 
 			for (CStack<CHookContext>::iterator ctx_iter = m_ContextStack.begin();
@@ -266,7 +267,7 @@ namespace SourceHook
 			return true;
 		}
 
-		List<CVfnPtr>::iterator CSourceHookImpl::RevertAndRemoveVfnPtr(List<CVfnPtr>::iterator vfnptr_iter)
+		std::list<CVfnPtr>::iterator CSourceHookImpl::RevertAndRemoveVfnPtr(std::list<CVfnPtr>::iterator vfnptr_iter)
 		{
 			ICleanupTask *cleanupTask = vfnptr_iter->GetCleanupTask();
 
@@ -277,7 +278,7 @@ namespace SourceHook
 			// we have to delay the cleanup of this thunk until the hook loop is done
 			// (because the orig function call mechanism is going to use the thunk).
 
-			if (cleanupTask != NULL)
+			if (cleanupTask != nullptr)
 			{
 				// If this vfnptr is in use in one of the hook loops running at the moment
 				// Schedule it for removal on the DEEPEST hook loop.
@@ -362,10 +363,10 @@ namespace SourceHook
 		{
 			// 1) Remove all hooks by this plugin
 
-			CVector<int> removehooks;
+			std::vector<int> removehooks;
 			m_HookIDMan.FindAllHooks(removehooks, plug);
 
-			for (CVector<int>::iterator iter = removehooks.begin(); iter != removehooks.end(); ++iter)
+			for (std::vector<int>::iterator iter = removehooks.begin(); iter != removehooks.end(); ++iter)
 				RemoveHookByID(*iter);
 
 			// 2) Remove all hook managers
@@ -419,7 +420,7 @@ namespace SourceHook
 		void CSourceHookImpl::RemoveHookManager(Plugin plug, HookManagerPubFunc pubFunc)
 		{
 			// Find the hook manager
-			CHookManList::iterator hookman_iter = m_HookManList.find(CHookManager::Descriptor(plug, pubFunc));
+			CHookManList::iterator hookman_iter = std::find(std::begin(m_HookManList), std::end(m_HookManList), CHookManager::Descriptor(plug, pubFunc));
 
 			if (hookman_iter != m_HookManList.end())
 			{
@@ -499,8 +500,8 @@ namespace SourceHook
 					oldctx->m_CallOrig = true;
 					oldctx->m_State = CHookContext::State_Dead;
 
-					List<CVfnPtr*> &vfnptr_list = static_cast<CHookManager*>(hi)->GetVfnPtrList();
-					List<CVfnPtr*>::iterator vfnptr_iter;
+					std::list<CVfnPtr*> &vfnptr_list = static_cast<CHookManager*>(hi)->GetVfnPtrList();
+					std::list<CVfnPtr*>::iterator vfnptr_iter;
 					for (vfnptr_iter = vfnptr_list.begin();
 						vfnptr_iter != vfnptr_list.end(); ++vfnptr_iter)
 					{
@@ -557,8 +558,8 @@ namespace SourceHook
 
 			pCtx->pIface = NULL;
 
-			List<CVfnPtr*> &vfnptr_list = static_cast<CHookManager*>(hi)->GetVfnPtrList();
-			List<CVfnPtr*>::iterator vfnptr_iter; 
+			std::list<CVfnPtr*> &vfnptr_list = static_cast<CHookManager*>(hi)->GetVfnPtrList();
+			std::list<CVfnPtr*>::iterator vfnptr_iter; 
 			for (vfnptr_iter = vfnptr_list.begin();
 				vfnptr_iter != vfnptr_list.end(); ++vfnptr_iter)
 			{
@@ -588,7 +589,7 @@ namespace SourceHook
 
 		void CSourceHookImpl::ResolvePendingUnloads(bool force)
 		{
-			List<PendingUnload *>::iterator iter = m_PendingUnloads.begin();
+			std::list<PendingUnload *>::iterator iter = m_PendingUnloads.begin();
 			while (iter != m_PendingUnloads.end())
 			{
 				PendingUnload *unload = *iter;
@@ -625,28 +626,28 @@ namespace SourceHook
 
 		void CSourceHookImpl::CompleteShutdown()
 		{
-			CVector<int> removehooks;
+			std::vector<int> removehooks;
 			m_HookIDMan.FindAllHooks(removehooks);
 
-			for (CVector<int>::iterator iter = removehooks.begin(); iter != removehooks.end(); ++iter)
+			for (std::vector<int>::iterator iter = removehooks.begin(); iter != removehooks.end(); ++iter)
 				RemoveHookByID(*iter);
 		}
 
 		void CSourceHookImpl::PausePlugin(Plugin plug)
 		{
-			CVector<int> pausehooks;
+			std::vector<int> pausehooks;
 			m_HookIDMan.FindAllHooks(pausehooks, plug);
 
-			for (CVector<int>::iterator iter = pausehooks.begin(); iter != pausehooks.end(); ++iter)
+			for (std::vector<int>::iterator iter = pausehooks.begin(); iter != pausehooks.end(); ++iter)
 				PauseHookByID(*iter);
 		}
 
 		void CSourceHookImpl::UnpausePlugin(Plugin plug)
 		{
-			CVector<int> unpausehooks;
+			std::vector<int> unpausehooks;
 			m_HookIDMan.FindAllHooks(unpausehooks, plug);
 
-			for (CVector<int>::iterator iter = unpausehooks.begin(); iter != unpausehooks.end(); ++iter)
+			for (std::vector<int>::iterator iter = unpausehooks.begin(); iter != unpausehooks.end(); ++iter)
 				UnpauseHookByID(*iter);
 		}
 
@@ -672,18 +673,16 @@ namespace SourceHook
 			}
 
 			// find vfnptr
-			List<CVfnPtr>::iterator vfnptr_iter = m_VfnPtrs.find(hentry->vfnptr);
-			if (vfnptr_iter == m_VfnPtrs.end())
-				return false;
+			std::list<CVfnPtr>::iterator vfnptr_iter = std::find(std::begin(m_VfnPtrs), std::end(m_VfnPtrs), hentry->vfnptr);
+			if (vfnptr_iter == m_VfnPtrs.end()) return false;
 
 			// find iface
-			List<CIface>::iterator iface_iter = vfnptr_iter->GetIfaceList().find(hentry->adjustediface);
-			if (iface_iter == vfnptr_iter->GetIfaceList().end())
-				return false;
+			std::list<CIface>::iterator iface_iter = std::find(std::begin(vfnptr_iter->GetIfaceList()), std::end(vfnptr_iter->GetIfaceList()), hentry->adjustediface);
+			if (iface_iter == vfnptr_iter->GetIfaceList().end()) return false;
 
 			// find hook
-			List<CHook> &hooks = hentry->post ? iface_iter->GetPostHookList() : iface_iter->GetPreHookList();
-			List<CHook>::iterator hook_iter = hooks.find(hookid);
+			std::list<CHook> &hooks = hentry->post ? iface_iter->GetPostHookList() : iface_iter->GetPreHookList();
+			std::list<CHook>::iterator hook_iter = std::find(std::begin(hooks), std::end(hooks), hookid);
 			if (hook_iter == hooks.end())
 				return false;
 
@@ -703,7 +702,7 @@ namespace SourceHook
 				return NULL;
 
 			case State_Born:
-				m_Iter = List<CHook>::iterator();
+				m_Iter = std::list<CHook>::iterator();
 				m_State = State_Pre;
 
 				// fall-through
@@ -712,7 +711,8 @@ namespace SourceHook
 			case State_Pre:
 				if (pIface)
 				{
-					if (!m_Iter)
+					bool is_nullptr = std::is_null_pointer_v<decltype(m_Iter)>;
+					if (!is_nullptr)
 						m_Iter = pIface->GetPreHookList().begin();
 					else
 						++m_Iter;
@@ -728,7 +728,7 @@ namespace SourceHook
 				// end of normal hooks -> VP
 				
 				m_State = State_PreVP;
-				m_Iter = List<CHook>::iterator();
+				m_Iter = std::list<CHook>::iterator();
 
 				// fall-through
 			case State_Recall_PreVP:
@@ -737,13 +737,14 @@ namespace SourceHook
 				pVPIface = pVfnPtr->FindIface(NULL);
 				if (pVPIface)
 				{
-					if (!m_Iter)
+					bool is_nullptr = std::is_null_pointer_v<decltype(m_Iter)>;
+					if (!is_nullptr)
 						m_Iter = pVPIface->GetPreHookList().begin();
 					else
 						++m_Iter;
 					SkipPaused(m_Iter, pVPIface->GetPreHookList());
 
-					if (m_Iter != pVPIface->GetPreHookList())
+					if (m_Iter != pVPIface->GetPreHookList().end())
 					{
 						pIfacePtr = reinterpret_cast<void*>(reinterpret_cast<char*>(pThisPtr) - m_Iter->GetThisPointerOffset());
 						return m_Iter->GetHandler();
@@ -756,14 +757,16 @@ namespace SourceHook
 				return NULL;
 				
 			case State_OrigCall:
-				m_Iter = List<CHook>::iterator();
+				m_Iter = std::list<CHook>::iterator();
 				m_State = State_Post;
 
 				// fall-through
 			case State_Post:
 				if (pIface)
 				{
-					if (!m_Iter)
+					bool is_nullptr = std::is_null_pointer_v<decltype(m_Iter)>;
+
+					if (!is_nullptr)
 						m_Iter = pIface->GetPostHookList().begin();
 					else
 						++m_Iter;
@@ -778,20 +781,21 @@ namespace SourceHook
 				// end of normal hooks -> VP
 
 				m_State = State_PostVP;
-				m_Iter = List<CHook>::iterator();
+				m_Iter = std::list<CHook>::iterator();
 
 				// fall-through
 			case State_PostVP:
-				pVPIface = pVfnPtr->FindIface(NULL);
+				pVPIface = pVfnPtr->FindIface(nullptr);
 				if (pVPIface)
 				{
-					if (!m_Iter)
+					bool is_nullptr = std::is_null_pointer_v<decltype(m_Iter)>;
+					if (!is_nullptr)
 						m_Iter = pVPIface->GetPostHookList().begin();
 					else
 						++m_Iter;
 					SkipPaused(m_Iter, pVPIface->GetPostHookList());
 
-					if (m_Iter != pVPIface->GetPostHookList())
+					if (m_Iter != pVPIface->GetPostHookList().end())
 					{
 						pIfacePtr = reinterpret_cast<void*>(reinterpret_cast<char*>(pThisPtr) - m_Iter->GetThisPointerOffset());
 						return m_Iter->GetHandler();
@@ -831,7 +835,7 @@ namespace SourceHook
 			return m_CallOrig;
 		}
 
-		void CHookContext::HookRemoved(List<CHook>::iterator oldhookiter, List<CHook>::iterator nexthookiter)
+		void CHookContext::HookRemoved(std::list<CHook>::iterator oldhookiter, std::list<CHook>::iterator nexthookiter)
 		{
 			if (m_Iter == oldhookiter)
 			{

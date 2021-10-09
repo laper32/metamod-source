@@ -69,7 +69,7 @@ namespace SourceHook
 
 		CHookManager *CHookManList::GetHookMan(CHookManager &hm)
 		{
-			iterator iter = find(hm);
+			iterator iter = std::find(std::begin(*this), std::end(*this), hm);
 			if (iter == end())
 			{
 				push_back(hm);

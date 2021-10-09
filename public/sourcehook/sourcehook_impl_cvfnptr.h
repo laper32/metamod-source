@@ -11,7 +11,7 @@
 #ifndef __SOURCEHOOK_IMPL_CVFNPTR_H__
 #define __SOURCEHOOK_IMPL_CVFNPTR_H__
 
-#include "sh_list.h"
+#include <list>
 #include "sh_memory.h"
 #include "sh_pagealloc.h"
 #include "sourcehook_impl_cleanuptask.h"
@@ -29,8 +29,8 @@ namespace SourceHook
 			void *m_OrigEntry;
 			void *m_OrigCallThunk;		// See Init() method
 
-			List<CHookManager*> m_HookMans;
-			List<CIface> m_IfaceList;
+			std::list<CHookManager*> m_HookMans;
+			std::list<CIface> m_IfaceList;
 		public:
 			// *** Descriptor ***
 			typedef void* Descriptor;
@@ -43,8 +43,8 @@ namespace SourceHook
 			inline void *GetPtr() const;
 			inline void *GetOrigEntry() const;
 			void *GetOrigCallAddr() const;
-			inline List<CIface> &GetIfaceList();
-			inline const List<CIface> &GetIfaceList() const;
+			inline std::list<CIface> &GetIfaceList();
+			inline const std::list<CIface> &GetIfaceList() const;
 			CIface *FindIface(void *iface);
 			CIface &GetIface(void *iface);
 			bool Patch(void *newValue);
@@ -75,12 +75,12 @@ namespace SourceHook
 			return m_OrigEntry;
 		}
 
-		inline List<CIface> &CVfnPtr::GetIfaceList()
+		inline std::list<CIface> &CVfnPtr::GetIfaceList()
 		{
 			return m_IfaceList;
 		}
 
-		inline const List<CIface> &CVfnPtr::GetIfaceList() const
+		inline const std::list<CIface> &CVfnPtr::GetIfaceList() const
 		{
 			return m_IfaceList;
 		}

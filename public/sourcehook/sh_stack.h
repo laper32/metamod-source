@@ -12,8 +12,7 @@
 #define __SH_STACK_H__
 
 #include <stddef.h>
-#include "sh_vector.h"
-
+#include <vector>
 namespace SourceHook
 {
 	// May _never_ reallocate used memory!
@@ -22,13 +21,13 @@ namespace SourceHook
 	{
 		static const size_t SECTOR_SIZE = 16;
 
-		CVector<T*> m_Sectors;				// Stores sectors
+		std::vector<T*> m_Sectors;				// Stores sectors
 
 		size_t m_UsedSize;
 
 		void clear()
 		{
-			typename CVector<T*>::iterator sect_iter;
+			typename std::vector<T*>::iterator sect_iter;
 			for (sect_iter = m_Sectors.begin(); sect_iter != m_Sectors.end(); ++sect_iter)
 			{
 				delete [] *sect_iter;
@@ -115,7 +114,7 @@ namespace SourceHook
 
 		CStack(const CStack &other)
 		{
-			for (typename CVector<T*>::iterator sect_iter = other.m_Sectors.begin();
+			for (typename std::vector<T*>::iterator sect_iter = other.m_Sectors.begin();
 				sect_iter != other.m_Sectors.end(); ++sect_iter)
 			{
 				m_Sectors.push_back(new T[SECTOR_SIZE]);
@@ -128,7 +127,7 @@ namespace SourceHook
 		CStack & operator =(const CStack &other)
 		{
 			clear();
-			for (typename CVector<T*>::iterator sect_iter = other.m_Sectors.begin();
+			for (typename std::vector<T*>::iterator sect_iter = other.m_Sectors.begin();
 				sect_iter != other.m_Sectors.end(); ++sect_iter)
 			{
 				m_Sectors.push_back(new T[SECTOR_SIZE]);

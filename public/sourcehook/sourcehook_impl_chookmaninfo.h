@@ -11,7 +11,7 @@
 #ifndef __SOURCEHOOK_IMPL_CHOOKMANINFO_H__
 #define __SOURCEHOOK_IMPL_CHOOKMANINFO_H__
 
-#include "sh_list.h"
+#include <list>
 #include "sourcehook_impl_cproto.h"
 
 namespace SourceHook
@@ -32,7 +32,7 @@ namespace SourceHook
 
 			void *m_HookfuncVfnptr;
 
-			List<CVfnPtr*> m_VfnPtrs;
+			std::list<CVfnPtr*> m_VfnPtrs;
 		public:
 			// *** Descriptor ***
 			struct Descriptor
@@ -66,7 +66,7 @@ namespace SourceHook
 			void IncrRef(CVfnPtr *pVfnPtr);
 			void DecrRef(CVfnPtr *pVfnPtr);
 
-			List<CVfnPtr*> &GetVfnPtrList()
+			std::list<CVfnPtr*> &GetVfnPtrList()
 			{
 				return m_VfnPtrs;
 			}
@@ -76,7 +76,7 @@ namespace SourceHook
 				ProtoInfo *proto, void *hookfunc_vfnptr);
 		};
 
-		class CHookManList : public List<CHookManager>
+		class CHookManList : public std::list<CHookManager>
 		{
 		public:
 			CHookManager *GetHookMan(Plugin plug, HookManagerPubFunc pubFunc);

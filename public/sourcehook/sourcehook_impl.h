@@ -213,7 +213,7 @@ namespace SourceHook
 			};
 
 			int m_State;
-			List<CHook>::iterator m_Iter;
+			std::list<CHook>::iterator m_Iter;
 
 			CVfnPtr *pVfnPtr;
 			CIface *pIface;
@@ -231,13 +231,13 @@ namespace SourceHook
 
 			ICleanupTask *m_CleanupTask;
 
-			void SkipPaused(List<CHook>::iterator &iter, List<CHook> &list)
+			void SkipPaused(std::list<CHook>::iterator &iter, std::list<CHook> &list)
 			{
 				while (iter != list.end() && iter->IsPaused())
 					++iter;
 			}
 		public:
-			void HookRemoved(List<CHook>::iterator oldhookiter, List<CHook>::iterator nexthookiter);
+			void HookRemoved(std::list<CHook>::iterator oldhookiter, std::list<CHook>::iterator nexthookiter);
 			void IfaceRemoved(CIface *iface);
 			void VfnPtrRemoved(CVfnPtr *vfnptr);
 
@@ -248,7 +248,7 @@ namespace SourceHook
 			void DoCleanupTaskAndDeleteIt();
 		};
 
-		class CVfnPtrList : public List<CVfnPtr>
+		class CVfnPtrList : public std::list<CVfnPtr>
 		{
 		public:
 			CVfnPtr *GetVfnPtr(void *p);
@@ -300,11 +300,11 @@ namespace SourceHook
 			CVfnPtrList m_VfnPtrs;
 			CHookIDManager m_HookIDMan;
 			HookContextStack m_ContextStack;
-			List<PendingUnload *> m_PendingUnloads;
+			std::list<PendingUnload *> m_PendingUnloads;
 
 			bool SetHookPaused(int hookid, bool paused);
 			CHookManList::iterator RemoveHookManager(CHookManList::iterator iter);
-			List<CVfnPtr>::iterator RevertAndRemoveVfnPtr(List<CVfnPtr>::iterator vfnptr_iter);
+			std::list<CVfnPtr>::iterator RevertAndRemoveVfnPtr(std::list<CVfnPtr>::iterator vfnptr_iter);
 		public:
 			CSourceHookImpl();
 			virtual ~CSourceHookImpl();
